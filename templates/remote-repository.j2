@@ -1,0 +1,37 @@
+{#
+Dots are not allowed in .htpasswd usernames, so we replace them with '_'.
+Also see 'tasks/add_rest_user.yml' in 'restic_server' role and
+https://httpd.apache.org/docs/2.4/programs/htpasswd.html#restrictions.
+HTTPS is assumed for all rest servers
+#}
+
+{#-
+The repositories on our rest-server are configured per-machine and a single
+user is responsible for a complete system-backup. The backup destination
+can be accessed as follows:
+rest:             specifies the connection protocol for the restic clientto use
+                  for the remote storage.
+https://          authentication and data transfer happens over HTTPS.
+<client-hostname> The clients hostname is also its username for authentication
+                  against REST. Dots are replaced by underscores.
+:                 Field separator between username and password.
+<password>        The clients password used for authentication agains the REST
+                  server. Should only contain alphanumerical characters.
+@                 Field separator between username:password and host:port.
+<server-hostname> Target servers FQDN the client sends backups to. The FQDN is
+                  derived from the inventory group 'backupservers', but gets
+                  manipulated by '/etc/hosts' file for remote clients
+                  (points to 127.0.0.1).
+                  This cannot be set to 'localhost' directly on remote clients
+                  because then the hostname of the rest-server's TLS certificate
+                  would not match anymore.
+:                 Field separator between host and port.
+<port>            TCP port where the remote REST server is listening on after
+                  the backup server established the SSH connection. See
+                  'restic_remote_client_port' in 'restic_remote' role.
+/<path>           Path to repository as reflected 1:1 on the server
+                  (our default: the clients hostname).
+#}
+
+{%- set clean_inventory_hostname = inventory_hostname | regex_replace('\\.', '_') %}
+rest:https://{{ clean_inventory_hostname }}:{{ restic_remote_client_rest_password }}@{{ backup_server }}:{{ restic_remote_client_port }}/{{ clean_inventory_hostname }}

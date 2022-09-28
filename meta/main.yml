@@ -1,0 +1,28 @@
+---
+
+galaxy_info:
+  role_name: restic_remote
+  namespace: fifty2technology
+  description: Ansible role to configure automated backups for remote machines which cannot reach the backup server directly. SSH connection from backup server to client necessary.
+  author: FIFTY2 Technology GmbH
+  company: FIFTY2 Technology GmbH
+  license: GPL-3.0-only
+  min_ansible_version: 2.11
+  platforms:
+    - name: Debian
+      versions:
+        - buster
+        - bullseye
+    - name: EL
+      versions:
+        - 8
+        - 9
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+        - jammy
+  galaxy_tags:
+    - system
+    - backup
+    - restic

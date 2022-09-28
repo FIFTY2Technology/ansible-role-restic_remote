@@ -1,0 +1,51 @@
+---
+
+- name: Copy SSH public key of backup server to backup client
+  ansible.posix.authorized_key:
+    user: "{{ restic_remote_client_user }}"
+    state: present
+    key: "{{ restic_remote_server_authorized_key }}"
+  become: true
+
+###
+# We have to use the FQDN of the backup server in the restic repository and
+# cannot use 'localhost', since the TLS certificate will not match the given
+# hostname anymore (also see 'restic_client' role, 'templates/repository.j2').
+# For more information about the SSH tunnel see this role's README.md.
+# 'unsafe_writes' will allow to edit '/etc/hosts' when running inside a container,
+# e.g. while doing the molecule tests. Also see:
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#parameter-unsafe_writes
+###
+- name: Fake IP address of backup server to resolve to 127.0.0.1
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1   {{ backup_server }}"
+    owner: root
+    group: root
+    mode: '0644'
+    unsafe_writes: true
+  become: true
+
+###
+# The backup server will login to the SSH session as the restic user.
+###
+- name: Give restic user sudo permissions to start restic backup and prune services
+  ansible.builtin.template:
+    src: sudoers-restic-service.j2
+    dest: /etc/sudoers.d/restic-service
+    owner: root
+    group: root
+    mode: '0640'
+  become: true
+
+###
+# 'no_log' for all tasks that include a secret
+###
+- name: Template restic remote repository path (to REST server via incoming SSH)
+  ansible.builtin.template:
+    src: templates/remote-repository.j2
+    dest: "{{ restic_remote_client_config_dir }}/repository"
+    owner: "{{ restic_remote_client_user }}"
+    group: "{{ restic_remote_client_group }}"
+    mode: '0400'
+  no_log: "{{ restic_remote_no_log }}"

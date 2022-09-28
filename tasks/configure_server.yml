@@ -1,0 +1,94 @@
+---
+
+###
+# Use '.env' file suffix because a templated instance of the
+# 'restic-remote-backup@.service' (or more generally any
+# 'restic-remote-*@.service) would automatically read all '.conf' files in that
+# folder. Search for 'drop-in' here:
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Description
+# Each templated instance should only read its respective '.env' file, with the
+# correct SSH user (and other variables) inside. Regard it as "additional
+# arguments" to the templated service instance (beside the "%i").
+###
+- name: Set default settings for host-specific overrides of templated systemd service
+  ansible.builtin.template:
+    src: restic-remote-@.service.d/defaults.env.j2
+    dest: /etc/systemd/system/restic-remote-@.service.d/defaults.env
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  run_once: true
+  delegate_to: "{{ backup_server }}"
+  vars:
+    ansible_password: "{{ backup_server_password }}"
+    ansible_become_password: "{{ backup_server_become_password }}"
+
+- name: Set details for SSH connections from server to remote client
+  ansible.builtin.template:
+    src: restic-remote-@.service.d/hostname.env.j2
+    dest: "/etc/systemd/system/restic-remote-@.service.d/{{ inventory_hostname }}.env"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  delegate_to: "{{ backup_server }}"
+  vars:
+    ansible_password: "{{ backup_server_password }}"
+    ansible_become_password: "{{ backup_server_become_password }}"
+
+###
+# The directory for this 'known_hosts' file got created in the 'restic_server'
+# role.
+###
+- name: Configure and install systemd 'restic-remote-*' timers on backup server
+  block:
+    - name: Copy remote client's SSH server public key to backup server's known_hosts
+      ansible.builtin.known_hosts:
+        name: "{{ inventory_hostname }}"
+        path: "/home/{{ restic_remote_server_user }}/.ssh/known_hosts"
+        key: >-
+          {{ inventory_hostname }},{{ inventory_hostname_short }}
+          {{ ansible_facts.ssh_host_key_ed25519_public_keytype }}
+          {{ ansible_facts.ssh_host_key_ed25519_public }}
+        state: present
+
+    - name: Set correct permissions for SSH known_hosts file
+      ansible.builtin.file:
+        path: "/home/{{ restic_remote_server_user }}/.ssh/known_hosts"
+        owner: "{{ restic_remote_server_user }}"
+        group: "{{ restic_remote_server_group }}"
+        mode: '0644'
+
+    ###
+    # 'inventory_hostname' is the *origin* hostname, not the *delegated_to* host.
+    ###
+    - name: enable restic-remote-backup service
+      ansible.builtin.systemd:
+        name: "restic-remote-backup@{{ inventory_hostname }}.timer"
+        state: started
+        enabled: true
+      when:
+        - _client_has_restic_backup_service
+
+    - name: enable restic-remote-prune service
+      ansible.builtin.systemd:
+        name: "restic-remote-prune@{{ inventory_hostname }}.timer"
+        state: started
+        enabled: true
+      when:
+        - _client_has_restic_prune_service
+
+    - name: enable restic-remote-exporter service
+      ansible.builtin.systemd:
+        name: "restic-remote-exporter@{{ inventory_hostname }}.timer"
+        state: started
+        enabled: true
+      when:
+        - _client_has_restic_exporter_service
+  delegate_to: "{{ backup_server }}"
+  become: true
+  delegate_facts: false
+  vars:
+    ansible_password: "{{ backup_server_password }}"
+    ansible_become_password: "{{ backup_server_become_password }}"

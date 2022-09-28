@@ -1,0 +1,15 @@
+---
+
+- name: Converge
+  hosts: all:!backupservers
+  gather_facts: true
+
+  vars:
+    restic_client_is_remote: true
+    backup_server: backupserver
+    backup_server_password: ""
+    backup_server_become_password: ""
+    restic_remote_server_authorized_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... rest-server@backupserver
+
+  roles:
+    - role: restic_remote

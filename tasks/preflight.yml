@@ -1,0 +1,43 @@
+---
+
+###
+# Check for the existence of various systemd service files. In case they are
+# present, the corresponding remote '.timer' will be activated on the backup
+# server. If a service (e.g. 'restic-exporter.service') is not found on the
+# remote client, it means the related role was not run on the specific host - in
+# this case it doesn't make sense to start the service via a remote '.timer'.
+# The corresponding remote timers get activated in 'tasks/configure_server.yml'.
+###
+- name: Check for presence of 'restic-backup.service' file
+  ansible.builtin.stat:
+    path: /etc/systemd/system/restic-backup.service
+  register: _client_has_restic_backup_service
+
+- name: Check for presence of 'restic-prune.service' file
+  ansible.builtin.stat:
+    path: /etc/systemd/system/restic-backup.service
+  register: _client_has_restic_prune_service
+
+- name: Check for presence of 'restic-exporter.service' file
+  ansible.builtin.stat:
+    path: /etc/systemd/system/restic-backup.service
+  register: _client_has_restic_exporter_service
+
+###
+# See 'vars/main.yml' for package selection.
+###
+- name: Install OpenSSH server and -client tools
+  ansible.builtin.package:
+    name: "{{ restic_remote_packages }}"
+    state: present
+
+- name: Start sshd
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: sshd
+    state: started
+
+- name: Gather SSH public key facts
+  ansible.builtin.setup:
+    gather_subset:
+      - ssh_host_key_ed25519_public

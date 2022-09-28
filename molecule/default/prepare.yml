@@ -1,0 +1,21 @@
+---
+
+- hosts: all:!backupservers
+  gather_facts: true
+  gather_subset: hardware
+  become: true
+
+  vars:
+    backup_server: backupserver
+
+  roles:
+    - role: restic_client
+
+- hosts: backupservers
+  gather_facts: true
+
+  vars:
+    backup_server: backupserver
+
+  roles:
+    - role: restic_server

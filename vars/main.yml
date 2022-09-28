@@ -1,0 +1,11 @@
+---
+
+_restic_remote_packages:
+  Debian:
+    - openssh-server
+    - openssh-client
+  RedHat:
+    - openssh-server
+    - ssh-keygen
+
+restic_remote_packages: "{{ _restic_remote_packages[ansible_os_family] }}"
