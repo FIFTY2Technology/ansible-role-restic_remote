@@ -12,4 +12,4 @@
     restic_remote_server_authorized_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... rest-server@backupserver
 
   roles:
-    - role: restic_remote
+    - role: fifty2technology.restic_remote

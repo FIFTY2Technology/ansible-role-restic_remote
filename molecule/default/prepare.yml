@@ -9,7 +9,7 @@
     backup_server: backupserver
 
   roles:
-    - role: restic_client
+    - role: fifty2technology.restic_client
 
 - hosts: backupservers
   gather_facts: true
@@ -18,4 +18,4 @@
     backup_server: backupserver
 
   roles:
-    - role: restic_server
+    - role: fifty2technology.restic_server
