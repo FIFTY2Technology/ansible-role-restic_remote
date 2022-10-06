@@ -1,6 +1,8 @@
 ---
 
 - ansible.builtin.import_tasks: preflight.yml
+  when:
+    - restic_remote_client_is_remote
 
 - ansible.builtin.import_tasks: configure_client.yml
   when:
