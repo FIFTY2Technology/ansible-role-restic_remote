@@ -7,6 +7,7 @@
 
   vars:
     backup_server: backupserver
+    restic_client_use_lvm: false  # doesn't work inside container, would use host's LVM
 
   roles:
     - role: fifty2technology.restic_client
@@ -16,6 +17,7 @@
 
   vars:
     backup_server: backupserver
+    restic_server_binary_install_dir: /tmp
 
   roles:
     - role: fifty2technology.restic_server
