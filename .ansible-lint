@@ -1,0 +1,10 @@
+---
+
+exclude_paths:
+  - venv
+  - fix
+  - feature
+
+skip_list:
+  - 'experimental'
+  - 'key-order[task]'

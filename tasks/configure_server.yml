@@ -63,7 +63,7 @@
     ###
     # 'inventory_hostname' is the *origin* hostname, not the *delegated_to* host.
     ###
-    - name: enable restic-remote-backup service
+    - name: Enable restic-remote-backup service
       ansible.builtin.systemd:
         name: "restic-remote-backup@{{ inventory_hostname }}.timer"
         state: started
@@ -71,7 +71,7 @@
       when:
         - _client_has_restic_backup_service
 
-    - name: enable restic-remote-prune service
+    - name: Enable restic-remote-prune service
       ansible.builtin.systemd:
         name: "restic-remote-prune@{{ inventory_hostname }}.timer"
         state: started
@@ -79,7 +79,7 @@
       when:
         - _client_has_restic_prune_service
 
-    - name: enable restic-remote-exporter service
+    - name: Enable restic-remote-exporter service
       ansible.builtin.systemd:
         name: "restic-remote-exporter@{{ inventory_hostname }}.timer"
         state: started

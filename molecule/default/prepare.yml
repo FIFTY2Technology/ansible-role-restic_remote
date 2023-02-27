@@ -1,8 +1,10 @@
 ---
 
-- hosts: all:!backupservers
+- name: Prepare backup clients
+  hosts: all:!backupservers
   gather_facts: true
-  gather_subset: hardware
+  gather_subset:
+    - hardware
   become: true
 
   vars:
@@ -12,7 +14,8 @@
   roles:
     - role: fifty2technology.restic_client
 
-- hosts: backupservers
+- name: Prepare a backup server
+  hosts: backupservers
   gather_facts: true
 
   vars:

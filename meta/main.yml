@@ -7,7 +7,7 @@ galaxy_info:
   author: FIFTY2 Technology GmbH
   company: FIFTY2 Technology GmbH
   license: GPL-3.0-only
-  min_ansible_version: 2.11
+  min_ansible_version: "2.11"
   platforms:
     - name: Debian
       versions:
@@ -15,8 +15,8 @@ galaxy_info:
         - bullseye
     - name: EL
       versions:
-        - 8
-        - 9
+        - "8"
+        - "9"
     - name: Ubuntu
       versions:
         - bionic
