@@ -5,7 +5,6 @@
   gather_facts: true
   gather_subset:
     - hardware
-  become: true
 
   vars:
     backup_server: backupserver
