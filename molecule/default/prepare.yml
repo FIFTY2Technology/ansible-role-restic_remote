@@ -27,7 +27,6 @@
 
   vars:
     backup_server: backupserver
-    restic_server_binary_install_dir: /tmp
 
   pre_tasks:
     - name: Force update package cache (Debian)
