@@ -5,11 +5,18 @@
   gather_facts: true
   gather_subset:
     - hardware
-  become: true
 
   vars:
     backup_server: backupserver
     restic_client_use_lvm: false  # doesn't work inside container, would use host's LVM
+
+  pre_tasks:
+    - name: Force update package cache (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+      become: true
+      when:
+        - "ansible_os_family == 'Debian'"
 
   roles:
     - role: fifty2technology.restic_client
@@ -20,7 +27,14 @@
 
   vars:
     backup_server: backupserver
-    restic_server_binary_install_dir: /tmp
+
+  pre_tasks:
+    - name: Force update package cache (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+      become: true
+      when:
+        - "ansible_os_family == 'Debian'"
 
   roles:
     - role: fifty2technology.restic_server
