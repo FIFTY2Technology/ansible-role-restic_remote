@@ -15,12 +15,12 @@
 
 - name: Check for presence of 'restic-prune.service' file
   ansible.builtin.stat:
-    path: /etc/systemd/system/restic-backup.service
+    path: /etc/systemd/system/restic-prune.service
   register: _client_has_restic_prune_service
 
 - name: Check for presence of 'restic-exporter.service' file
   ansible.builtin.stat:
-    path: /etc/systemd/system/restic-backup.service
+    path: /etc/systemd/system/restic-exporter.service
   register: _client_has_restic_exporter_service
 
 ###
