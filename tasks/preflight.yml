@@ -37,7 +37,7 @@
     name: sshd
     state: started
 
-- name: Gather SSH public key facts
+- name: Gather SSH public host key facts from client
   ansible.builtin.setup:
     gather_subset:
       - ssh_host_key_ed25519_public

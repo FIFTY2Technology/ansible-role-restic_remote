@@ -24,7 +24,7 @@
     ansible_password: "{{ backup_server_password }}"
     ansible_become_password: "{{ backup_server_become_password }}"
 
-- name: Set details for SSH connections from server to remote client
+- name: Set host-specific details for SSH connections from server to remote client
   ansible.builtin.template:
     src: restic-remote-@.service.d/hostname.env.j2
     dest: "/etc/systemd/system/restic-remote-@.service.d/{{ inventory_hostname }}.env"
@@ -45,10 +45,10 @@
   block:
     - name: Copy remote client's SSH server public key to backup server's known_hosts
       ansible.builtin.known_hosts:
-        name: "{{ inventory_hostname }}"
+        name: "[{{ inventory_hostname }}]:{{ restic_remote_ssh_port }}"
         path: "/home/{{ restic_remote_server_user }}/.ssh/known_hosts"
         key: >-
-          {{ inventory_hostname }},{{ inventory_hostname_short }}
+          [{{ inventory_hostname }}]:{{ restic_remote_ssh_port }},[{{ inventory_hostname_short }}]:{{ restic_remote_ssh_port }}
           {{ ansible_facts.ssh_host_key_ed25519_public_keytype }}
           {{ ansible_facts.ssh_host_key_ed25519_public }}
         state: present
