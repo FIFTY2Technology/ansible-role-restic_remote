@@ -1,11 +1,13 @@
 # Description
-This role configures automated backups for remote machines which cannot reach the backup server directly, e.g. due to firewalls, NAT, etc. The backup server must be able to reach the remote client via SSH.
+This role configures automated backups for remote backup clients which cannot reach the backup server directly, e.g. due to firewalls, NAT, etc. The backup server must be able to reach the remote client via SSH.
 
-For this to work, an SSH connection is initiated by a systemd service `restic-remote-backup@.service` on the backup server each night, forwarding the `rest-server` port to the remote client and then invoking the `restic-backup.service` there.
+You can regard this role as kind of an extension to the `fifty2technology.restic_client` role, as they are both integrated into each other, but it once made more sense to unload the `restic_client` role and separate the "remote client" functionality from it. It is also coupled with the `fifty2technology.restic_server` role, since the backup server needs to be configured to connect to remote clients - this means it can only work with clients with a [restic REST server](https://github.com/restic/rest-server) account configured as a repository.
+
+This role configures both restic remote clients (machines that need files backed up) and the restic REST server (which hosts the restic repositories). Once this role is deployed, the backup server starts a systemd service `restic-remote-backup@<remote-client>.service`, which initiates an SSH connection, forwarding the backup server's port to the remote restic client via SSH and then invoking the `restic-backup.service` there.
 
 Once a week (on saturday night) the backup server also connects to each remote client and runs the `restic-prune.service`.
 
-For monitoring purposes, the backup server connects to each remote machine once every day via `restic-remote-exporter@.service` to gather metrics about the latest backup snapshot. This cannot be done by the client itself since it requires access to the restic repository on the server.
+For monitoring purposes and if configured, the backup server connects to each remote machine once every day via `restic-remote-exporter@.service` to gather metrics about the latest backup snapshot. This cannot be done by the client itself since it requires access to the restic repository on the server.
 
 # Requirements
 * The variable `restic_client_is_remote` must be set to `true` to enable remote backups.
@@ -42,11 +44,13 @@ The `restic_client` role should be run on targets beforehand, and the `restic_se
   become: true
 
   vars:
+    restic_client_is_remote: true
     backup_server: backupserver.example.com
     backup_server_password: supersecurepassword
     backup_server_become_password: supersecurebecomepassword
 
   roles:
+    - role: restic_client
     - role: restic_remote
 ```
 
@@ -62,5 +66,7 @@ Example how to fully test the whole `restic_remote` role from deploy to a remote
 3. Run `molecule login -h backupserver` to login to the backupserver container.
    1. Run `systemctl start restic-remote-backup@restic_remote_debian11.service` to test if the backup is working.
    2. Run `journalctl -fe` to check for possible errors.
-4. Run `molecule login -h restic_remote_debian11`
-   1. Run `journalctl -fe` to check for possible errors.
+3. Run `molecule login -h restic_remote_debian12`
+   1. Run `journalctl -ft restic` to check for possible errors.
+
+Dependig on the container environment, molecule containers might not be able to resolve each others hostnames, breaaking the SSH connection attempts in the `restic-remote-backup@<remote-client>.service`. In this case, add the `restic_remote_debian12` hostname to `/etc/hosts` manually on the `backupserver`. In a productive setup, hostnames must be resolvable via DNS.
