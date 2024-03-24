@@ -4,7 +4,7 @@
   ansible.posix.authorized_key:
     user: "{{ restic_remote_client_user }}"
     state: present
-    key: "{{ restic_remote_server_authorized_key }}"
+    key: "{{ _restic_remote_server_authorized_key.content | b64decode }}"
   become: true
 
 ###

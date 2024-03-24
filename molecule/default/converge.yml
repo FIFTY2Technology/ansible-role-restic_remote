@@ -9,7 +9,6 @@
     backup_server: backupserver
     backup_server_password: ""
     backup_server_become_password: ""
-    restic_remote_server_authorized_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... rest-server@backupserver
 
   roles:
     - role: fifty2technology.restic_remote
