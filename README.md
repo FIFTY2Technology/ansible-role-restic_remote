@@ -1,6 +1,24 @@
 # Description
 This role configures automated backups for remote backup clients which cannot reach the backup server directly, e.g. due to firewalls, NAT, etc. The backup server must be able to reach the remote client via SSH.
 
+<details><p><summary>Flowchart</summary>
+
+```mermaid
+sequenceDiagram
+    Backup Server->>+Backup Server: systemctl start restic-remote-backup@Client.service
+    Backup Server->>+Remote Client: Open SSH tunnel, forward REST server port 3000,<br>execute sudo systemctl start restic-backup.service
+
+    Remote Client->>+restic-backup.service: Starting restic-backup.service - Restic backup...
+    restic-backup.service->>restic-backup.service: restic init ...<br>restic backup ...
+    restic-backup.service->>Remote Client: restic: open repository at rest:http(s)://user:pass@Server:3000/Client
+    Remote Client->>Remote Client: "Server" always resolves to IP 127.0.0.1
+    restic-backup.service->>Backup Server: using parent snapshot d289ee09<br>...<br>snapshot fa15be6f saved
+    restic-backup.service->>-Remote Client: restic-backup.service: Deactivated successfully.
+    Remote Client->>-Backup Server: Finished restic-backup.service - Restic backup.
+    Backup Server->>-Backup Server: restic-remote-backup@Client.service: Succeeded.
+```
+</p></details>
+
 You can regard this role as kind of an extension to the `fifty2technology.restic_client` role, as they are both integrated into each other, but it once made more sense to unload the `restic_client` role and separate the "remote client" functionality from it. It is also coupled with the `fifty2technology.restic_server` role, since the backup server needs to be configured to connect to remote clients - this means it can only work with clients with a [restic REST server](https://github.com/restic/rest-server) account configured as a repository.
 
 This role configures both restic remote clients (machines that need files backed up) and the restic REST server (which hosts the restic repositories). Once this role is deployed, the backup server starts a systemd service `restic-remote-backup@<remote-client>.service`, which initiates an SSH connection, forwarding the backup server's port to the remote restic client via SSH and then invoking the `restic-backup.service` there.
