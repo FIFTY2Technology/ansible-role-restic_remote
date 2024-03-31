@@ -1,6 +1,8 @@
 # Description
 This role configures automated backups for remote backup clients which cannot reach the backup server directly, e.g. due to firewalls, NAT, etc. The backup server must be able to reach the remote client via SSH.
 
+This role configures both restic remote clients (machines that need files backed up) and the restic REST server (which hosts the restic repositories). Once this role is deployed, the backup server starts a systemd service `restic-remote-backup@<remote-client>.service`, which initiates an SSH connection, forwarding the backup server's port to the remote restic client via SSH and then invoking the `restic-backup.service` there.
+
 <details><p><summary>Flowchart</summary>
 
 ```mermaid
@@ -20,8 +22,6 @@ sequenceDiagram
 </p></details>
 
 You can regard this role as kind of an extension to the `fifty2technology.restic_client` role, as they are both integrated into each other, but it once made more sense to unload the `restic_client` role and separate the "remote client" functionality from it. It is also coupled with the `fifty2technology.restic_server` role, since the backup server needs to be configured to connect to remote clients - this means it can only work with clients with a [restic REST server](https://github.com/restic/rest-server) account configured as a repository.
-
-This role configures both restic remote clients (machines that need files backed up) and the restic REST server (which hosts the restic repositories). Once this role is deployed, the backup server starts a systemd service `restic-remote-backup@<remote-client>.service`, which initiates an SSH connection, forwarding the backup server's port to the remote restic client via SSH and then invoking the `restic-backup.service` there.
 
 Once a week (on saturday night) the backup server also connects to each remote client and runs the `restic-prune.service`.
 
@@ -45,7 +45,7 @@ All variables which can be overridden are stored in defaults/main.yml file as we
 | `restic_remote_server_group` | `"{{ restic_server_group \| default('rest-server') }}"` | Groupname used to assert that a SSH private/public keypair exists with correct ownership on the server. The keypair should exist already (created in `restic_server` role). |
 | `restic_remote_client_port` | `"{{ restic_server_listen_port \| default('3000') }}"` | Port to use on client side to terminate SSH tunnel coming from the backup server. Set to a port not used by something else on the client. Defaults to the same port the `restic_server` role uses to let the REST server listen on. |
 | `restic_remote_client_user` | `"{{ restic_client_user \| default('restic') }}"` | Username used by the server to connect to the client via SSH. The server then starts the `restic-backup.service` as this user via `sudo systemctl start restic-backup.service`. |
-| `restic_remote_ssh_port` | 22 | SSH port of the client, which will be used by the backup server to connect. |
+| `restic_remote_ssh_port` | 22 | SSH port of the client, which will be used by the backup server to connect. This role does not configure 'Port' in SSHD config! |
 | `restic_remote_client_group` | `"{{ restic_client_group \| default('restic') }}"` | Groupname getting granted `sudo` privileges on client to start systemd services `restic-backup.service` and `restic-prune.service`. The client's user must be in this group. |
 | `restic_remote_client_home` | `"{{ restic_client_home \| default('/home/' + restic_remote_client_user) }}"` | Construct config directory from `restic_client` defaults. Required for placing the `repository` file to the correct location. |
 | `restic_remote_client_config_dir` | `"{{ restic_client_config_dir \| default(restic_remote_client_home + '/.config/restic') }}"` | See comment of `restic_remote_client_home` above |
@@ -81,4 +81,4 @@ Example how to fully test the whole `restic_remote` role from deploy to a remote
 3. Run `molecule login -h restic_remote_debian12`
    1. Run `journalctl -ft restic` to check for possible errors.
 
-Dependig on the container environment, molecule containers might not be able to resolve each others hostnames, breaaking the SSH connection attempts in the `restic-remote-backup@<remote-client>.service`. In this case, add the `restic_remote_debian12` hostname to `/etc/hosts` manually on the `backupserver`. In a productive setup, hostnames must be resolvable via DNS.
+Dependig on the container environment, molecule containers might not be able to resolve each others hostnames, breaking the SSH connection attempts in the `restic-remote-backup@<remote-client>.service`. In this case, add the `restic_remote_debian12` hostname to `/etc/hosts` manually on the `backupserver`. In a productive setup, hostnames must be resolvable via DNS.

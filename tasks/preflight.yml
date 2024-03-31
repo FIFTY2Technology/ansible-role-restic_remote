@@ -26,7 +26,7 @@
 ###
 # See 'vars/main.yml' for package selection.
 ###
-- name: Install OpenSSH server and -client tools
+- name: Install required packages
   ansible.builtin.package:
     name: "{{ restic_remote_packages }}"
     state: present

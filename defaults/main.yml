@@ -15,17 +15,21 @@ restic_remote_server_group: "{{ restic_server_group | default('rest-server') }}"
 # Port to use on client side to terminate SSH tunnel coming from the backup
 # server. Set to a port not used by something else on the client. Defaults to
 # the same port the 'restic_server' role uses to let the REST server listen on.
+# Becomes SSH_REMOTE_LISTEN_PORT on the server when initiating the remote backup.
 ###
 restic_remote_client_port: "{{ restic_server_listen_port | default('3000') }}"
 
 ###
 # Username to use for SSH connections from server to client, and user which
 # starts the `restic-backup.service` via sudo on the client.
+# Becomes SSH_USER on the server when initiating the remote backup.
 ###
 restic_remote_client_user: "{{ restic_client_user | default('restic') }}"
 
 ###
 # SSH port of the client, which will be used by the backup server to connect.
+# Becomes SSH_PORT on the server when initiating the remote backup.
+# This role does not configure 'Port' in SSHD config!
 ###
 restic_remote_ssh_port: "22"
 

@@ -48,7 +48,7 @@
         name: "[{{ inventory_hostname }}]:{{ restic_remote_ssh_port }}"
         path: "/home/{{ restic_remote_server_user }}/.ssh/known_hosts"
         key: >-
-          [{{ inventory_hostname }}]:{{ restic_remote_ssh_port }},[{{ inventory_hostname_short }}]:{{ restic_remote_ssh_port }}
+          {{ inventory_hostname }},[{{ inventory_hostname }}]:{{ restic_remote_ssh_port }}
           {{ ansible_facts.ssh_host_key_ed25519_public_keytype }}
           {{ ansible_facts.ssh_host_key_ed25519_public }}
         state: present
