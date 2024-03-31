@@ -28,7 +28,7 @@ Once a week (on saturday night) the backup server also connects to each remote c
 For monitoring purposes and if configured, the backup server connects to each remote machine once every day via `restic-remote-exporter@.service` to gather metrics about the latest backup snapshot. This cannot be done by the client itself since it requires access to the restic repository on the server.
 
 # Requirements
-* The variable `restic_client_is_remote` must be set to `true` to enable remote backups.
+* The variable `restic_client_is_remote` must be set to `true` to enable remote backups. It must also be set during `restic_client` role deployment so it configures and activates systemd services correctly.
 * `backup_server` must be set to the `inventory_hostname` of the backup server, e.g. `backupserver.example.com`.
 * `backup_server_password` must contain the login credentials for the backup server.
 * `backup_server_become_password` must contain the privilege escalation password for the unprivileged user on the backup server.
@@ -53,7 +53,7 @@ All variables which can be overridden are stored in defaults/main.yml file as we
 | `restic_remote_no_log` | true | Do not show sensible content when printed by `ansible-playbook` runs. Set to `false` for debugging e.g. repository file templating. |
 
 # Dependencies
-The `restic_client` role should be run on targets beforehand, and the `restic_server` role for the restic rest-server(s) must be deployed already.
+The `restic_client` role must be run on targets beforehand, and the `restic_server` role for the restic rest-server must be deployed already.
 
 # Example Playbook
 ```

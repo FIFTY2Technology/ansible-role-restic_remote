@@ -37,15 +37,3 @@
     group: root
     mode: '0640'
   become: true
-
-###
-# 'no_log' for all tasks that include a secret
-###
-- name: Template restic remote repository path (to REST server via incoming SSH)
-  ansible.builtin.template:
-    src: templates/remote-repository.j2
-    dest: "{{ restic_remote_client_config_dir }}/repository"
-    owner: "{{ restic_remote_client_user }}"
-    group: "{{ restic_remote_client_group }}"
-    mode: '0400'
-  no_log: "{{ restic_remote_no_log }}"

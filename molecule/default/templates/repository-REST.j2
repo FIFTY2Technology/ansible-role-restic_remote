@@ -1,0 +1,13 @@
+{#- Dots are not allowed in .htpasswd usernames, so we replace them with '_'.
+    Also see 'tasks/add_rest_user.yml' in 'restic_server' role and
+    https://httpd.apache.org/docs/2.4/programs/htpasswd.html#restrictions. #}
+{% set _rest_username            = inventory_hostname | regex_replace('\\.', '_') %}
+
+{#- Note that REST passwords cannot contain special characters in order to not
+    get confused with field delimiters in the 'repository' string. #}
+{% set _rest_password            = our_rest_password %}
+
+{% set _backup_server            = groups['backupservers'][0] %}
+{% set _backup_server_port       = restic_remote_client_port | default(restic_server_listen_port) -%}
+
+rest:http://{{ _rest_username }}:{{ _rest_password }}@{{ _backup_server }}:{{ _backup_server_port }}/{{ _rest_username }}
