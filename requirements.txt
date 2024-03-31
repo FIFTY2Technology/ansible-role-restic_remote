@@ -2,4 +2,4 @@ ansible
 ansible-lint
 yamllint
 molecule
-molecule-podman
+molecule-plugins[podman]==23.5.0  # fixes https://github.com/ansible-community/molecule-plugins/issues/242
