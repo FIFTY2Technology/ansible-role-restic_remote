@@ -37,3 +37,25 @@
 
   roles:
     - role: fifty2technology.restic_server
+
+  post_tasks:
+    ###
+    # This task ensures all auth credentials are present in the backup servers
+    # '.htpasswd' file. It's read from host_vars, preferrably this should be
+    # read through Ansible Vault or any other reasonable secure lookup mechanism.
+    # The .htpasswd file specification does not allow dots in usernames, therefore
+    # we change them to underscores here.
+    # Ref: https://httpd.apache.org/docs/2.4/programs/htpasswd.html#restrictions
+    ###
+    - name: Add rest-server accounts
+      community.general.htpasswd:
+        path: "{{ restic_server_backup_path }}/.htpasswd"
+        name: "{{ item.inventory_hostname | regex_replace('\\.', '_') }}"
+        password: "{{ item.our_rest_password }}"
+        crypt_scheme: bcrypt
+        state: present
+        owner: "{{ restic_server_user }}"
+        group: "{{ restic_server_group }}"
+        mode: '0600'
+      become: true
+      loop: "{{ groups['backupclients'] }}"
