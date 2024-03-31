@@ -21,8 +21,8 @@
   run_once: true
   delegate_to: "{{ backup_server }}"
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"
 
 - name: Set host-specific details for SSH connections from server to remote client
   ansible.builtin.template:
@@ -34,8 +34,8 @@
   become: true
   delegate_to: "{{ backup_server }}"
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"
 
 ###
 # The directory for this 'known_hosts' file got created in the 'restic_server'
@@ -90,5 +90,5 @@
   become: true
   delegate_facts: false
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"

@@ -7,7 +7,6 @@
     - hardware
 
   vars:
-    backup_server: backupserver
     restic_client_repository: templates/repository-REST.j2
     restic_client_use_lvm: false  # doesn't work inside container, would use host's LVM
     restic_client_is_remote: true
@@ -23,12 +22,10 @@
   roles:
     - role: fifty2technology.restic_client
 
+
 - name: Prepare a backup server
   hosts: backupservers
   gather_facts: true
-
-  vars:
-    backup_server: backupserver
 
   pre_tasks:
     - name: Force update package cache (Debian)

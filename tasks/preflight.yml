@@ -50,8 +50,8 @@
   ansible.builtin.slurp:
     src: "/home/{{ restic_remote_server_user }}/.ssh/id_ed25519.pub"
   register: _restic_remote_server_authorized_key
-  delegate_to: "{{ backup_server }}"
   become: true
+  delegate_to: "{{ backup_server }}"
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"

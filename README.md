@@ -30,10 +30,10 @@ For monitoring purposes and if configured, the backup server connects to each re
 # Requirements
 * The variable `restic_client_is_remote` must be set to `true` to enable remote backups. It must also be set during `restic_client` role deployment so it configures and activates systemd services correctly.
 * `backup_server` must be set to the `inventory_hostname` of the backup server, e.g. `backupserver.example.com`.
-* `backup_server_password` must contain the login credentials for the backup server.
-* `backup_server_become_password` must contain the privilege escalation password for the unprivileged user on the backup server.
+* `backup_server_password` must contain the login credentials for the backup server if SSH password-authentication is used. With key-based authentication, this can be left undefined (will default to empty string).
+* `backup_server_become_password` must contain the privilege escalation password for the unprivileged user on the backup server. The same as above applies here in case of key-based authentication.
 
-The `backup_server`\* variables are necessary so that `delegate_to` tasks to the backup server are run correctly. It shouldn't be necessary if you use SSH login with keys and/or as privileged user.
+The `backup_server_*password` variables are necessary for password-only authentication, so that `delegate_to` tasks to the backup server are run correctly. It is not necessary if you use SSH login with keys and/or as privileged user.
 
 # Role Variables
 All variables which can be overridden are stored in defaults/main.yml file as well as in table below.
@@ -61,8 +61,6 @@ The `restic_client` role must be run on targets beforehand, and the `restic_serv
   vars:
     restic_client_is_remote: true
     backup_server: backupserver.example.com
-    backup_server_password: supersecurepassword
-    backup_server_become_password: supersecurebecomepassword
 
   roles:
     - role: restic_client

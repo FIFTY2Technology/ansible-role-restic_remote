@@ -6,9 +6,7 @@
 
   vars:
     restic_client_is_remote: true
-    backup_server: backupserver
-    backup_server_password: ""
-    backup_server_become_password: ""
+    backup_server: "{{ groups['backupservers'][0] }}"
 
   roles:
     - role: fifty2technology.restic_remote
