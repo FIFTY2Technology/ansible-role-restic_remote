@@ -4,8 +4,10 @@ _restic_remote_packages:
   Debian:
     - openssh-server
     - openssh-client
+    - sudo
   RedHat:
     - openssh-server
     - openssh
+    - sudo
 
 restic_remote_packages: "{{ _restic_remote_packages[ansible_os_family] }}"

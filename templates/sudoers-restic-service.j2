@@ -1,5 +1,11 @@
 # {{ ansible_managed }}
 
+{% if _client_has_restic_backup_service.stat.exists %}
 %{{ restic_remote_client_group }} ALL=NOPASSWD: /bin/systemctl start restic-backup.service
+{% endif %}
+{% if _client_has_restic_prune_service.stat.exists %}
 %{{ restic_remote_client_group }} ALL=NOPASSWD: /bin/systemctl start restic-prune.service
+{% endif %}
+{% if _client_has_restic_exporter_service.stat.exists %}
 %{{ restic_remote_client_group }} ALL=NOPASSWD: /bin/systemctl start restic-exporter.service
+{% endif %}

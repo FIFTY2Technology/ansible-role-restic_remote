@@ -4,7 +4,7 @@
   ansible.posix.authorized_key:
     user: "{{ restic_remote_client_user }}"
     state: present
-    key: "{{ restic_remote_server_authorized_key }}"
+    key: "{{ _restic_remote_server_authorized_key.content | b64decode }}"
   become: true
 
 ###
@@ -37,15 +37,3 @@
     group: root
     mode: '0640'
   become: true
-
-###
-# 'no_log' for all tasks that include a secret
-###
-- name: Template restic remote repository path (to REST server via incoming SSH)
-  ansible.builtin.template:
-    src: templates/remote-repository.j2
-    dest: "{{ restic_remote_client_config_dir }}/repository"
-    owner: "{{ restic_remote_client_user }}"
-    group: "{{ restic_remote_client_group }}"
-    mode: '0400'
-  no_log: "{{ restic_remote_no_log }}"

@@ -21,10 +21,10 @@
   run_once: true
   delegate_to: "{{ backup_server }}"
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"
 
-- name: Set details for SSH connections from server to remote client
+- name: Set host-specific details for SSH connections from server to remote client
   ansible.builtin.template:
     src: restic-remote-@.service.d/hostname.env.j2
     dest: "/etc/systemd/system/restic-remote-@.service.d/{{ inventory_hostname }}.env"
@@ -34,8 +34,8 @@
   become: true
   delegate_to: "{{ backup_server }}"
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"
 
 ###
 # The directory for this 'known_hosts' file got created in the 'restic_server'
@@ -45,10 +45,10 @@
   block:
     - name: Copy remote client's SSH server public key to backup server's known_hosts
       ansible.builtin.known_hosts:
-        name: "{{ inventory_hostname }}"
+        name: "[{{ inventory_hostname }}]:{{ restic_remote_ssh_port }}"
         path: "/home/{{ restic_remote_server_user }}/.ssh/known_hosts"
         key: >-
-          {{ inventory_hostname }},{{ inventory_hostname_short }}
+          {{ inventory_hostname }},[{{ inventory_hostname }}]:{{ restic_remote_ssh_port }}
           {{ ansible_facts.ssh_host_key_ed25519_public_keytype }}
           {{ ansible_facts.ssh_host_key_ed25519_public }}
         state: present
@@ -69,7 +69,7 @@
         state: started
         enabled: true
       when:
-        - _client_has_restic_backup_service
+        - _client_has_restic_backup_service.stat.exists
 
     - name: Enable restic-remote-prune service
       ansible.builtin.systemd:
@@ -77,7 +77,7 @@
         state: started
         enabled: true
       when:
-        - _client_has_restic_prune_service
+        - _client_has_restic_prune_service.stat.exists
 
     - name: Enable restic-remote-exporter service
       ansible.builtin.systemd:
@@ -85,10 +85,10 @@
         state: started
         enabled: true
       when:
-        - _client_has_restic_exporter_service
+        - _client_has_restic_exporter_service.stat.exists
   delegate_to: "{{ backup_server }}"
   become: true
   delegate_facts: false
   vars:
-    ansible_password: "{{ backup_server_password }}"
-    ansible_become_password: "{{ backup_server_become_password }}"
+    ansible_password: "{{ backup_server_password | default('') }}"
+    ansible_become_password: "{{ backup_server_become_password | default('') }}"

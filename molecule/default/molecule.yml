@@ -6,7 +6,7 @@ driver:
   name: podman
 platforms:
   - name: backupserver
-    image: "geerlingguy/docker-debian11-ansible:latest"
+    image: "geerlingguy/docker-debian12-ansible:latest"
     command: /sbin/init
     tmpfs:
       - /run
@@ -14,9 +14,26 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     network: "restic_remote_network"
-
-  - name: restic_remote_${MOLECULE_DISTRO:-debian11}
-    image: "geerlingguy/docker-${MOLECULE_DISTRO:-debian11}-ansible:latest"
+  - name: restic_remote_debian12
+    image: "geerlingguy/docker-debian12-ansible:latest"
+    command: /sbin/init
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    network: "restic_remote_network"
+  - name: restic_remote_debian12_ssh_port
+    image: "geerlingguy/docker-debian12-ansible:latest"
+    command: /sbin/init
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    network: "restic_remote_network"
+  - name: restic_remote_debian12_client_port
+    image: "geerlingguy/docker-debian12-ansible:latest"
     command: /sbin/init
     tmpfs:
       - /run
@@ -33,5 +50,41 @@ provisioner:
           backupservers:
             hosts:
               backupserver:
+          backupclients:
+            restic_remote_debian12:
+            restic_remote_debian12_client_port:
+            restic_remote_debian12_ssh_port:
+    group_vars:
+      all:
+        restic_server_listen_port: 3000
+    host_vars:
+      ###
+      # * 'our_rest_password' variable is needed to template the custom REST
+      #   repository of this molecule test in 'restic_client' role AND the
+      #   'post_tasks' in 'prepare.yml' where the REST accounts are added to
+      #   the REST backup server.
+      # * 'restic_client_encryption_password' is only required for 'restic_client' role.
+      # * 'restic_remote_client_port' is used by 'restic_client' to template
+      #   'repository-REST.j2', AND used by 'restic_remote' to set client-
+      #   specific env-file on backup server (if not defined, will default to
+      #   'restic_server_listen_port' for both roles).
+      # * 'restic_remote_ssh_port' is only used by 'restic_remote'.
+      ###
+      restic_remote_debian12:
+        our_rest_password: HsWDmQJKFbmOCqI5KfvufiELsltWCzWu
+        restic_client_encryption_password: 2S0xRfeAYdl0tptDfELLLZyD8mC3p7H2veV8rTc2uWRodvIEThkm
+      restic_remote_debian12_client_port:
+        our_rest_password: Ghm62NzJJzVEHo4eJ.Y04tNWxlMAaqA.
+        restic_client_encryption_password: CrLLuGLiR@YBO%TqwgKRVI,fqss5sZsKYfc!%DZfueo_kWeg^Q8e
+        restic_remote_client_port: 4711
+      restic_remote_debian12_ssh_port:
+        our_rest_password: YWgZniJobptX6_44MreYL0gVxeSrHLlA
+        restic_client_encryption_password: OSfFesEUn9IO1hFkAd_4aERxwkRmoCKdrykhON5Agp9sbssDGTfi
+        restic_remote_ssh_port: 2222
 verifier:
   name: ansible
+scenario:
+  converge_sequence:
+    - create
+    - prepare
+    - converge
