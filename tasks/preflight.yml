@@ -31,11 +31,17 @@
     name: "{{ restic_remote_packages }}"
     state: present
 
-- name: Start sshd
-  ansible.builtin.systemd:
-    daemon_reload: true
+- name: Start ssh - Debian/Ubuntu
+  ansible.builtin.service:
+    name: ssh
+    state: started
+  when: ansible_os_family == 'Debian'
+
+- name: Start sshd - RedHat
+  ansible.builtin.service:
     name: sshd
     state: started
+  when: ansible_os_family == 'RedHat'
 
 - name: Gather SSH public host key facts from client
   ansible.builtin.setup:
