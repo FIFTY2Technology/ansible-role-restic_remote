@@ -1,3 +1,6 @@
+> [!WARNING]
+> This project has been moved to https://api.fifty2.eu/public_projects/ansible-role-restic_remote
+
 # Description
 This role configures automated backups for remote backup clients which cannot reach the backup server directly, e.g. due to firewalls, NAT, etc. The backup server must be able to reach the remote client via SSH.
 
